@@ -15,6 +15,8 @@ import { UsersModule } from './modules/users/users.module';
       validationSchema: Joi.object({
         MONGO_CONNECTION_STRING: Joi.string().required(),
         MONGO_DB_NAME: Joi.string().required(),
+        JWT_ACCESS_TOKEN_SECRET: Joi.string().required(),
+        JWT_ACCESS_TOKEN_EXPIRATION_TIME: Joi.string().required(),
       }),
     }),
     MongooseModule.forRootAsync({
