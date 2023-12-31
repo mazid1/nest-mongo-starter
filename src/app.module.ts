@@ -4,6 +4,8 @@ import { AppController } from './app.controller';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { EnvVariables } from './config/env-variables';
+import { AuthModule } from './modules/auth/auth.module';
+import { UsersModule } from './modules/users/users.module';
 
 @Module({
   imports: [
@@ -12,6 +14,7 @@ import { EnvVariables } from './config/env-variables';
       cache: true,
       validationSchema: Joi.object({
         MONGO_CONNECTION_STRING: Joi.string().required(),
+        MONGO_DB_NAME: Joi.string().required(),
       }),
     }),
     MongooseModule.forRootAsync({
@@ -19,8 +22,11 @@ import { EnvVariables } from './config/env-variables';
       inject: [ConfigService],
       useFactory: async (config: ConfigService<EnvVariables>) => ({
         uri: config.get<string>('MONGO_CONNECTION_STRING'),
+        dbName: config.get<string>('MONGO_DB_NAME'),
       }),
     }),
+    AuthModule,
+    UsersModule,
   ],
   controllers: [AppController],
   providers: [],
