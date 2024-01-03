@@ -8,7 +8,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { LocalAuthGuard } from './guards/local-auth.guard';
+import { LocalAuthGuard } from './guards/localAuth.guard';
 import { UserDocument } from '../users/schemas/user.schema';
 import { RefreshTokenGuard } from './guards/refreshToken.guard';
 

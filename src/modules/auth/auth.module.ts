@@ -5,9 +5,9 @@ import { UsersModule } from '../users/users.module';
 import { JwtModule } from '@nestjs/jwt';
 import { LocalStrategy } from './strategies/local.strategy';
 import { PassportModule } from '@nestjs/passport';
-import { LocalAuthGuard } from './guards/local-auth.guard';
-import { JwtStrategy } from './strategies/jwt.strategy';
-import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { LocalAuthGuard } from './guards/localAuth.guard';
+import { AccessTokenStrategy } from './strategies/accessToken.strategy';
+import { AccessTokenGuard } from './guards/accessToken.guard';
 import { RefreshTokenGuard } from './guards/refreshToken.guard';
 import { RefreshTokenStrategy } from './strategies/refreshToken.strategy';
 
@@ -18,8 +18,8 @@ import { RefreshTokenStrategy } from './strategies/refreshToken.strategy';
     AuthService,
     LocalStrategy,
     LocalAuthGuard,
-    JwtStrategy,
-    JwtAuthGuard,
+    AccessTokenStrategy,
+    AccessTokenGuard,
     RefreshTokenStrategy,
     RefreshTokenGuard,
   ],

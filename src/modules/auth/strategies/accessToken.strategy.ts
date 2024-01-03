@@ -7,7 +7,7 @@ import { EnvVariables } from 'src/config/env-variables';
 import { UsersService } from 'src/modules/users/users.service';
 
 @Injectable()
-export class JwtStrategy extends PassportStrategy(Strategy) {
+export class AccessTokenStrategy extends PassportStrategy(Strategy, 'jwt') {
   constructor(
     private usersService: UsersService,
     private configService: ConfigService<EnvVariables>,
