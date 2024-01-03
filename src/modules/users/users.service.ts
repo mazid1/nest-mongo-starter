@@ -10,4 +10,11 @@ export class UsersService {
   findOne(query: FilterQuery<User>): Promise<UserDocument> {
     return this.userModel.findOne(query).exec();
   }
+
+  findOneAndUpdate(
+    query: FilterQuery<User>,
+    update: Partial<User>,
+  ): Promise<UserDocument> {
+    return this.userModel.findOneAndUpdate(query, update, { new: true }).exec();
+  }
 }

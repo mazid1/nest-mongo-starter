@@ -10,6 +10,9 @@ export class User {
 
   @Prop({ required: true })
   passwordHash: string;
+
+  @Prop({ nullable: true })
+  refreshTokenHash?: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

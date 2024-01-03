@@ -17,6 +17,8 @@ import { UsersModule } from './modules/users/users.module';
         MONGO_DB_NAME: Joi.string().required(),
         JWT_ACCESS_TOKEN_SECRET: Joi.string().required(),
         JWT_ACCESS_TOKEN_EXPIRATION_TIME: Joi.string().required(),
+        JWT_REFRESH_TOKEN_SECRET: Joi.string().required(),
+        JWT_REFRESH_TOKEN_EXPIRATION_TIME: Joi.string().required(),
         JWT_ISSUER: Joi.string().required(),
         JWT_AUDIENCE: Joi.string().required(),
       }),

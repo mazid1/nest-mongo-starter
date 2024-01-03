@@ -8,6 +8,8 @@ import { PassportModule } from '@nestjs/passport';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { RefreshTokenGuard } from './guards/refreshToken.guard';
+import { RefreshTokenStrategy } from './strategies/refreshToken.strategy';
 
 @Module({
   imports: [UsersModule, JwtModule.register({}), PassportModule],
@@ -18,6 +20,8 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
     LocalAuthGuard,
     JwtStrategy,
     JwtAuthGuard,
+    RefreshTokenStrategy,
+    RefreshTokenGuard,
   ],
 })
 export class AuthModule {}
