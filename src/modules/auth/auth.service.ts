@@ -47,8 +47,8 @@ export class AuthService {
   }
 
   async generateTokens(user: UserDocument) {
-    const accessToken = await this.getAccessToken(user);
-    const refreshToken = await this.getRefreshToken(user);
+    const accessToken = await this.generateAccessToken(user);
+    const refreshToken = await this.generateRefreshToken(user);
     // update refresh token hash for better security
     await this.updateRefreshToken(user.id, refreshToken);
     return { accessToken, refreshToken };
@@ -58,7 +58,7 @@ export class AuthService {
     return bcrypt.hash(data, this.configService.get('BCRYPT_SALT_ROUNDS'));
   }
 
-  private async getAccessToken(user: UserDocument) {
+  private async generateAccessToken(user: UserDocument) {
     const payload = { email: user.email, sub: user.id };
     const token = await this.jwtService.signAsync(payload, {
       secret: this.configService.get('JWT_ACCESS_TOKEN_SECRET'),
@@ -69,7 +69,7 @@ export class AuthService {
     return token;
   }
 
-  private async getRefreshToken(user: UserDocument) {
+  private async generateRefreshToken(user: UserDocument) {
     const payload = { email: user.email, sub: user.id };
     const token = await this.jwtService.signAsync(payload, {
       secret: this.configService.get('JWT_REFRESH_TOKEN_SECRET'),
