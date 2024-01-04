@@ -7,6 +7,10 @@ import { FilterQuery, Model } from 'mongoose';
 export class UsersService {
   constructor(@InjectModel(User.name) private userModel: Model<User>) {}
 
+  create(user: User): Promise<UserDocument> {
+    return this.userModel.create(user);
+  }
+
   findOne(query: FilterQuery<User>): Promise<UserDocument> {
     return this.userModel.findOne(query).exec();
   }

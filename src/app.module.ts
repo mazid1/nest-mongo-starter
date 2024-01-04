@@ -21,6 +21,7 @@ import { UsersModule } from './modules/users/users.module';
         JWT_REFRESH_TOKEN_EXPIRATION_TIME: Joi.string().required(),
         JWT_ISSUER: Joi.string().required(),
         JWT_AUDIENCE: Joi.string().required(),
+        BCRYPT_SALT_ROUNDS: Joi.number().required(),
       }),
     }),
     MongooseModule.forRootAsync({

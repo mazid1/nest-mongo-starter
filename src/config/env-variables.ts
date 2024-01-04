@@ -7,4 +7,5 @@ export type EnvVariables = {
   JWT_REFRESH_TOKEN_EXPIRATION_TIME: string;
   JWT_ISSUER: string;
   JWT_AUDIENCE: string;
+  BCRYPT_SALT_ROUNDS: number;
 };

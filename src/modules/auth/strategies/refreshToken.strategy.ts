@@ -6,6 +6,7 @@ import { ExtractJwt } from 'passport-jwt';
 import { Strategy } from 'passport-jwt';
 import { EnvVariables } from 'src/config/env-variables';
 import { UsersService } from 'src/modules/users/users.service';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class RefreshTokenStrategy extends PassportStrategy(
@@ -27,14 +28,17 @@ export class RefreshTokenStrategy extends PassportStrategy(
   }
 
   async validate(req: Request, payload: { email: string; sub: string }) {
-    const refreshToken = req.get('Authorization').replace('Bearer ', '').trim();
-    // todo: use bcrypt
-    const refreshTokenHash = refreshToken;
     const user = await this.usersService.findOne({
       _id: payload.sub,
       email: payload.email,
-      refreshTokenHash,
     });
-    return user;
+    if (!user) return null;
+    const refreshToken = req.get('Authorization').replace('Bearer ', '').trim();
+    const isRefreshTokenMatched = await bcrypt.compare(
+      refreshToken,
+      user.refreshToken,
+    );
+    if (isRefreshTokenMatched) return user;
+    return null;
   }
 }
