@@ -31,6 +31,13 @@ export class AuthService {
     return this.generateTokens(newUser);
   }
 
+  async logout(userId: string) {
+    await this.usersService.findOneAndUpdate(
+      { _id: userId },
+      { refreshToken: null },
+    );
+  }
+
   async validateUserCredentials(email: string, password: string) {
     const user = await this.usersService.findOne({ email });
     if (!user) return null;

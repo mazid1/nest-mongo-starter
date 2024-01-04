@@ -13,6 +13,7 @@ import { LocalAuthGuard } from './guards/localAuth.guard';
 import { UserDocument } from '../users/schemas/user.schema';
 import { RefreshTokenGuard } from './guards/refreshToken.guard';
 import { CreateUserDto } from '../users/dtos/createUser.dto';
+import { AccessTokenGuard } from './guards/accessToken.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -29,6 +30,13 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   login(@Req() req: Request & { user: UserDocument }) {
     return this.authService.generateTokens(req.user);
+  }
+
+  @UseGuards(AccessTokenGuard)
+  @Post('logout')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  logout(@Req() req: Request & { user: UserDocument }) {
+    return this.authService.logout(req.user.id);
   }
 
   @UseGuards(RefreshTokenGuard)
