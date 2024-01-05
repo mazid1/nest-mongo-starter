@@ -13,6 +13,9 @@ export class CreateUserDto {
   @IsEmail()
   email: string;
 
+  /**
+   * Password must be at least 8 characters long, and contain at least one lowercase letter, one uppercase letter, one number and one special character.
+   */
   @IsStrongPassword(
     {
       minLength: 8,

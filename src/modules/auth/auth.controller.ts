@@ -14,7 +14,10 @@ import { UserDocument } from '../users/schemas/user.schema';
 import { RefreshTokenGuard } from './guards/refreshToken.guard';
 import { CreateUserDto } from '../users/dtos/createUser.dto';
 import { AccessTokenGuard } from './guards/accessToken.guard';
+import { ApiBearerAuth, ApiBody, ApiHeader, ApiTags } from '@nestjs/swagger';
+import { LoginDto } from './dtos/login.dto';
 
+@ApiTags('auth')
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
@@ -25,6 +28,9 @@ export class AuthController {
     return this.authService.signup(createUserDto);
   }
 
+  @ApiBody({
+    type: LoginDto,
+  })
   @UseGuards(LocalAuthGuard)
   @Post('login')
   @HttpCode(HttpStatus.OK)
@@ -32,6 +38,7 @@ export class AuthController {
     return this.authService.generateTokens(req.user);
   }
 
+  @ApiBearerAuth()
   @UseGuards(AccessTokenGuard)
   @Post('logout')
   @HttpCode(HttpStatus.NO_CONTENT)
@@ -39,9 +46,13 @@ export class AuthController {
     return this.authService.logout(req.user.id);
   }
 
+  @ApiBearerAuth()
+  @ApiHeader({
+    name: 'Authorization',
+    description: 'Bearer <refresh_token>',
+  })
   @UseGuards(RefreshTokenGuard)
   @Get('refresh')
-  @HttpCode(HttpStatus.OK)
   refresh(@Req() req: Request & { user: UserDocument }) {
     return this.authService.generateTokens(req.user);
   }
