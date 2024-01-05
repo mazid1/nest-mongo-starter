@@ -16,6 +16,7 @@ import { CreateUserDto } from '../users/dtos/createUser.dto';
 import { AccessTokenGuard } from './guards/accessToken.guard';
 import { ApiBearerAuth, ApiBody, ApiHeader, ApiTags } from '@nestjs/swagger';
 import { LoginDto } from './dtos/login.dto';
+import { TokensDto } from './dtos/tokens.dto';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -24,7 +25,7 @@ export class AuthController {
 
   @Post('signup')
   @HttpCode(HttpStatus.CREATED)
-  signup(@Body() createUserDto: CreateUserDto) {
+  signup(@Body() createUserDto: CreateUserDto): Promise<TokensDto> {
     return this.authService.signup(createUserDto);
   }
 
@@ -34,7 +35,7 @@ export class AuthController {
   @UseGuards(LocalAuthGuard)
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  login(@Req() req: Request & { user: UserDocument }) {
+  login(@Req() req: Request & { user: UserDocument }): Promise<TokensDto> {
     return this.authService.generateTokens(req.user);
   }
 
@@ -42,7 +43,7 @@ export class AuthController {
   @UseGuards(AccessTokenGuard)
   @Post('logout')
   @HttpCode(HttpStatus.NO_CONTENT)
-  logout(@Req() req: Request & { user: UserDocument }) {
+  logout(@Req() req: Request & { user: UserDocument }): Promise<void> {
     return this.authService.logout(req.user.id);
   }
 
@@ -53,7 +54,7 @@ export class AuthController {
   })
   @UseGuards(RefreshTokenGuard)
   @Get('refresh')
-  refresh(@Req() req: Request & { user: UserDocument }) {
+  refresh(@Req() req: Request & { user: UserDocument }): Promise<TokensDto> {
     return this.authService.generateTokens(req.user);
   }
 }
