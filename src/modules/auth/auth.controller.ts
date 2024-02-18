@@ -1,7 +1,6 @@
 import {
   Body,
   Controller,
-  Get,
   HttpCode,
   HttpStatus,
   Post,
@@ -55,7 +54,8 @@ export class AuthController {
     description: 'Bearer <refresh_token>',
   })
   @UseGuards(RefreshTokenGuard)
-  @Get('refresh')
+  @Post('refresh')
+  @HttpCode(HttpStatus.OK)
   refresh(@Req() req: Request & { user: UserDocument }): Promise<TokensDto> {
     const refreshToken = req.get('Authorization').split(' ').pop();
     return this.authService.refreshUserSession(req.user, refreshToken);
