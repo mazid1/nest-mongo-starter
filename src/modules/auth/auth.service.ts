@@ -62,9 +62,19 @@ export class AuthService {
     });
   }
 
+  async logoutFromOtherDevices(accessToken: string) {
+    const { userId } = await this.findOneUserSession({ accessToken });
+    await this.userSessionModel
+      .deleteMany({
+        userId,
+        accessToken: { $ne: this.hashToken(accessToken) },
+      })
+      .exec();
+  }
+
   async logoutFromAllDevices(accessToken: string) {
     const { userId } = await this.findOneUserSession({ accessToken });
-    await this.userSessionModel.deleteMany({ userId });
+    await this.userSessionModel.deleteMany({ userId }).exec();
   }
 
   async refreshUserSession(user: UserDocument, refreshToken: string) {

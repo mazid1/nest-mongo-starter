@@ -48,6 +48,15 @@ export class AuthController {
     return this.authService.logout(accessToken);
   }
 
+  @Post('logout-from-other-devices')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  logoutFromOtherDevices(
+    @Req() req: Request & { user: UserDocument },
+  ): Promise<void> {
+    const accessToken = req.get('Authorization').split(' ').pop();
+    return this.authService.logoutFromOtherDevices(accessToken);
+  }
+
   @ApiBearerAuth()
   @UseGuards(AccessTokenGuard)
   @Post('logout-from-all-devices')
