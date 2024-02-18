@@ -49,6 +49,17 @@ export class AuthController {
   }
 
   @ApiBearerAuth()
+  @UseGuards(AccessTokenGuard)
+  @Post('logout-from-all-devices')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  logoutFromAllDevices(
+    @Req() req: Request & { user: UserDocument },
+  ): Promise<void> {
+    const accessToken = req.get('Authorization').split(' ').pop();
+    return this.authService.logoutFromAllDevices(accessToken);
+  }
+
+  @ApiBearerAuth()
   @ApiHeader({
     name: 'Authorization',
     description: 'Bearer <refresh_token>',
