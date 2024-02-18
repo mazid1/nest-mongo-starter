@@ -18,11 +18,6 @@ export class User extends BaseSchema {
   @Exclude()
   @Prop({ required: true })
   password: string; // hashed password
-
-  @ApiHideProperty()
-  @Exclude()
-  @Prop({ nullable: true })
-  refreshToken?: string; // hashed refresh token
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

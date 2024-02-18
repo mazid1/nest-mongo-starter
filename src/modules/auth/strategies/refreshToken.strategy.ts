@@ -6,7 +6,8 @@ import { ExtractJwt } from 'passport-jwt';
 import { Strategy } from 'passport-jwt';
 import { EnvVariables } from 'src/config/env-variables';
 import { UsersService } from 'src/modules/users/users.service';
-import * as bcrypt from 'bcrypt';
+import { AuthService } from '../auth.service';
+import { JWTPayload } from './type';
 
 @Injectable()
 export class RefreshTokenStrategy extends PassportStrategy(
@@ -15,6 +16,7 @@ export class RefreshTokenStrategy extends PassportStrategy(
 ) {
   constructor(
     private usersService: UsersService,
+    private authService: AuthService,
     private configService: ConfigService<EnvVariables>,
   ) {
     super({
@@ -27,18 +29,16 @@ export class RefreshTokenStrategy extends PassportStrategy(
     });
   }
 
-  async validate(req: Request, payload: { email: string; sub: string }) {
+  async validate(req: Request, payload: JWTPayload) {
+    const refreshToken = req.get('Authorization').split(' ').pop();
+    const session = await this.authService.findOneUserSession({
+      refreshToken,
+    });
+    if (!session) return null;
+
     const user = await this.usersService.findOne({
       _id: payload.sub,
-      email: payload.email,
     });
-    if (!user) return null;
-    const refreshToken = req.get('Authorization').replace('Bearer ', '').trim();
-    const isRefreshTokenMatched = await bcrypt.compare(
-      refreshToken,
-      user.refreshToken,
-    );
-    if (isRefreshTokenMatched) return user;
-    return null;
+    return user;
   }
 }

@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../users/users.service';
@@ -6,6 +10,10 @@ import { UserDocument } from '../users/schemas/user.schema';
 import { EnvVariables } from 'src/config/env-variables';
 import { CreateUserDto } from '../users/dtos/createUser.dto';
 import * as bcrypt from 'bcrypt';
+import { createHash } from 'crypto';
+import { FilterQuery, Model } from 'mongoose';
+import { UserSession } from './schemas/user-session.schema';
+import { InjectModel } from '@nestjs/mongoose';
 
 @Injectable()
 export class AuthService {
@@ -13,6 +21,7 @@ export class AuthService {
     private usersService: UsersService,
     private jwtService: JwtService,
     private configService: ConfigService<EnvVariables>,
+    @InjectModel(UserSession.name) private userSessionModel: Model<UserSession>,
   ) {}
 
   async signup(createUserDto: CreateUserDto) {
@@ -23,19 +32,55 @@ export class AuthService {
       throw new BadRequestException('Email already exists');
     }
 
-    const passwordHash = await this.hashData(createUserDto.password);
+    const passwordHash = await this.hashPassword(createUserDto.password);
     const newUser = await this.usersService.create({
       ...createUserDto,
       password: passwordHash,
     });
-    return this.generateTokens(newUser);
+
+    return this.login(newUser);
   }
 
-  async logout(userId: string) {
-    await this.usersService.findOneAndUpdate(
-      { _id: userId },
-      { refreshToken: null },
-    );
+  async login(user: UserDocument) {
+    const tokens = await this.generateTokens(user);
+
+    const refreshTokenData = this.jwtService.decode(tokens.refreshToken);
+
+    await this.userSessionModel.create({
+      userId: user.id,
+      accessToken: this.hashToken(tokens.accessToken),
+      refreshToken: this.hashToken(tokens.refreshToken),
+      expiresAt: new Date(refreshTokenData.exp * 1000),
+    });
+
+    return tokens;
+  }
+
+  async logout(accessToken: string) {
+    await this.userSessionModel.findOneAndDelete({
+      accessToken: this.hashToken(accessToken),
+    });
+  }
+
+  async refreshUserSession(user: UserDocument, refreshToken: string) {
+    const userSession = await this.findOneUserSession({
+      refreshToken,
+    });
+    if (!userSession) throw new UnauthorizedException();
+
+    const tokens = await this.generateTokens(user);
+
+    await userSession
+      .updateOne({
+        accessToken: this.hashToken(tokens.accessToken),
+        refreshToken: this.hashToken(tokens.refreshToken),
+        expiresAt: new Date(
+          this.jwtService.decode(tokens.refreshToken).exp * 1000,
+        ),
+      })
+      .exec();
+
+    return tokens;
   }
 
   async validateUserCredentials(email: string, password: string) {
@@ -46,16 +91,32 @@ export class AuthService {
     return null;
   }
 
-  async generateTokens(user: UserDocument) {
+  findOneUserSession(query: FilterQuery<UserSession>) {
+    return this.userSessionModel
+      .findOne({
+        ...query,
+        ...(query.accessToken && {
+          accessToken: this.hashToken(query.accessToken),
+        }),
+        ...(query.refreshToken && {
+          refreshToken: this.hashToken(query.refreshToken),
+        }),
+      })
+      .exec();
+  }
+
+  private async generateTokens(user: UserDocument) {
     const accessToken = await this.generateAccessToken(user);
     const refreshToken = await this.generateRefreshToken(user);
-    // update refresh token hash for better security
-    await this.updateRefreshToken(user.id, refreshToken);
     return { accessToken, refreshToken };
   }
 
-  private hashData(data: string) {
+  private hashPassword(data: string) {
     return bcrypt.hash(data, this.configService.get('BCRYPT_SALT_ROUNDS'));
+  }
+
+  private hashToken(data: string) {
+    return createHash('sha256').update(data).digest('base64');
   }
 
   private async generateAccessToken(user: UserDocument) {
@@ -78,13 +139,5 @@ export class AuthService {
       audience: this.configService.get('JWT_AUDIENCE'),
     });
     return token;
-  }
-
-  private async updateRefreshToken(userId: string, refreshToken: string) {
-    const refreshTokenHash = await this.hashData(refreshToken);
-    return this.usersService.findOneAndUpdate(
-      { _id: userId },
-      { refreshToken: refreshTokenHash },
-    );
   }
 }
