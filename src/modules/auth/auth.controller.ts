@@ -8,6 +8,7 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
+import { Request } from 'express';
 import { AuthService } from './auth.service';
 import { LocalAuthGuard } from './guards/localAuth.guard';
 import { UserDocument } from '../users/schemas/user.schema';
@@ -36,7 +37,7 @@ export class AuthController {
   @Post('login')
   @HttpCode(HttpStatus.OK)
   login(@Req() req: Request & { user: UserDocument }): Promise<TokensDto> {
-    return this.authService.generateTokens(req.user);
+    return this.authService.login(req.user);
   }
 
   @ApiBearerAuth()
@@ -44,7 +45,8 @@ export class AuthController {
   @Post('logout')
   @HttpCode(HttpStatus.NO_CONTENT)
   logout(@Req() req: Request & { user: UserDocument }): Promise<void> {
-    return this.authService.logout(req.user.id);
+    const accessToken = req.get('Authorization').split(' ').pop();
+    return this.authService.logout(accessToken);
   }
 
   @ApiBearerAuth()
@@ -55,6 +57,7 @@ export class AuthController {
   @UseGuards(RefreshTokenGuard)
   @Get('refresh')
   refresh(@Req() req: Request & { user: UserDocument }): Promise<TokensDto> {
-    return this.authService.generateTokens(req.user);
+    const refreshToken = req.get('Authorization').split(' ').pop();
+    return this.authService.refreshUserSession(req.user, refreshToken);
   }
 }

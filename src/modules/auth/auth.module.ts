@@ -10,9 +10,18 @@ import { AccessTokenStrategy } from './strategies/accessToken.strategy';
 import { AccessTokenGuard } from './guards/accessToken.guard';
 import { RefreshTokenGuard } from './guards/refreshToken.guard';
 import { RefreshTokenStrategy } from './strategies/refreshToken.strategy';
+import { UserSession, UserSessionSchema } from './schemas/user-session.schema';
+import { MongooseModule } from '@nestjs/mongoose';
 
 @Module({
-  imports: [UsersModule, JwtModule.register({}), PassportModule],
+  imports: [
+    MongooseModule.forFeature([
+      { name: UserSession.name, schema: UserSessionSchema },
+    ]),
+    UsersModule,
+    JwtModule.register({}),
+    PassportModule,
+  ],
   controllers: [AuthController],
   providers: [
     AuthService,
